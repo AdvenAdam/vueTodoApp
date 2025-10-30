@@ -13,11 +13,13 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import Multiselect from './Multiselect.vue'
 import Toolbar from './Toolbar.vue'
 import SearchToggle from './SearchToggle.vue'
+import SearchDevToggle from './SearchDevToggle.vue'
 
 const store = useTaskStore()
 const selectionStore = useSelectionStore()
 const newTask = ref<Task | null>(null)
 const searchQuery = ref('')
+const searchDeveloperQuery = ref('')
 
 const { tasks, loading, error } = storeToRefs(store)
 
@@ -26,8 +28,8 @@ onMounted(async () => {
 })
 
 const filteredTasks = computed(() => {
-	const query = searchQuery.value
-	if (!query) return tasks.value
+	const query = searchQuery.value?.toLowerCase() || ''
+	const developerQuery = searchDeveloperQuery.value?.toLowerCase() || ''
 
 	return tasks.value.filter((task) => {
 		const matchesTitle = task.title.toLowerCase().includes(query)
@@ -35,7 +37,9 @@ const filteredTasks = computed(() => {
 		const matchesPriority = task.priority.toLowerCase().includes(query)
 		const matchesType = task.type.toLowerCase().includes(query)
 
-		return matchesTitle || matchesStatus || matchesPriority || matchesType
+		const matchesDeveloper = developerQuery ? task.developer?.some((dev) => dev.toLowerCase().includes(developerQuery)) : true
+
+		return (matchesTitle || matchesStatus || matchesPriority || matchesType) && matchesDeveloper
 	})
 })
 
@@ -253,6 +257,9 @@ const onClose = () => {
 const onSearch = (value: string) => {
 	searchQuery.value = value.toLowerCase().trim()
 }
+const onTaskSelected = (value: string) => {
+	searchDeveloperQuery.value = value.toLocaleLowerCase().trim()
+}
 </script>
 
 <template>
@@ -264,6 +271,10 @@ const onSearch = (value: string) => {
 			Add Task
 		</Button>
 		<SearchToggle @search="onSearch" />
+		<SearchDevToggle
+			:options="allDevelopers"
+			@search="onTaskSelected"
+		/>
 	</div>
 	<div class="flex flex-col max-w-screen-2xl mx-auto">
 		<div class="overflow-x-auto pb-4">
