@@ -5,6 +5,8 @@
 		@apply p-5 text-left text-sm font-semibold whitespace-nowrap text-gray-900;
 	}
 }
+@source inline("bg-{gray,red,blue,emerald,purple,green,yellow}-200");
+
 :root {
 	font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
 	line-height: 1.5;

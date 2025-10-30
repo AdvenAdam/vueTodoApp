@@ -4,7 +4,7 @@ import { CircleDot } from 'lucide-vue-next'
 
 const props = defineProps<{
 	text: string
-	variant: 'gray' | 'yellow' | 'blue' | 'purple' | 'green' | 'red'
+	variant: 'gray' | 'yellow' | 'blue' | 'purple' | 'green' | 'emerald' | 'red'
 }>()
 
 const statusClasses: Record<typeof props.variant, string> = {
@@ -13,6 +13,7 @@ const statusClasses: Record<typeof props.variant, string> = {
 	blue: 'bg-blue-50 text-blue-600',
 	purple: 'bg-purple-50 text-purple-600',
 	green: 'bg-emerald-50 text-emerald-600',
+	emerald: 'bg-emerald-50 text-emerald-600',
 	red: 'bg-red-50 text-red-600',
 }
 </script>

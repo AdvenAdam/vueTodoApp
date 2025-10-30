@@ -12,15 +12,31 @@ import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import Multiselect from './Multiselect.vue'
 import Toolbar from './Toolbar.vue'
+import SearchToggle from './SearchToggle.vue'
 
 const store = useTaskStore()
 const selectionStore = useSelectionStore()
 const newTask = ref<Task | null>(null)
+const searchQuery = ref('')
 
 const { tasks, loading, error } = storeToRefs(store)
 
 onMounted(async () => {
 	await store.fetchTasks()
+})
+
+const filteredTasks = computed(() => {
+	const query = searchQuery.value
+	if (!query) return tasks.value
+
+	return tasks.value.filter((task) => {
+		const matchesTitle = task.title.toLowerCase().includes(query)
+		const matchesStatus = task.status.toLowerCase().includes(query)
+		const matchesPriority = task.priority.toLowerCase().includes(query)
+		const matchesType = task.type.toLowerCase().includes(query)
+
+		return matchesTitle || matchesStatus || matchesPriority || matchesType
+	})
 })
 
 const allDevelopers = computed(() => {
@@ -52,7 +68,7 @@ const statusVariant = (status: Task['status']) => {
 		case 'Pending Deploy':
 			return 'purple'
 		case 'Done':
-			return 'green'
+			return 'emerald'
 		case 'Stuck':
 			return 'red'
 		default:
@@ -106,6 +122,62 @@ const addNewTaskRow = () => {
 	selectionStore.updateRows()
 }
 
+const taskStatusCounts = computed(() => {
+	const counts: Record<Task['status'], number> = {
+		'Ready to Start': 0,
+		'In Progress': 0,
+		'Waiting for review': 0,
+		'Pending Deploy': 0,
+		Done: 0,
+		Stuck: 0,
+	}
+
+	tasks.value.forEach((task) => {
+		if (task.status in counts) {
+			counts[task.status as Task['status']]++
+		} else {
+			counts[task.status as Task['status']] = 1
+		}
+	})
+
+	return counts
+})
+const taskPriorityCounts = computed(() => {
+	const counts: Record<Task['priority'], number> = {
+		Low: 0,
+		Medium: 0,
+		High: 0,
+		Critical: 0,
+		'Best Effort': 0,
+	}
+
+	tasks.value.forEach((task) => {
+		if (task.priority in counts) {
+			counts[task.priority as Task['priority']]++
+		} else {
+			counts[task.priority as Task['priority']] = 1
+		}
+	})
+
+	return counts
+})
+const taskTypeCounts = computed(() => {
+	const counts: Record<Task['type'], number> = {
+		'Feature Enhancements': 0,
+		Bug: 0,
+		Other: 0,
+	}
+
+	tasks.value.forEach((task) => {
+		if (task.type in counts) {
+			counts[task.type as Task['type']]++
+		} else {
+			counts[task.type as Task['type']] = 1
+		}
+	})
+
+	return counts
+})
 const editingCell = ref<{ row: number; field: keyof Task } | null>(null)
 const localEditValue = ref<string | number | Array<any> | null>(null)
 const inputRefs = ref<Record<string, HTMLInputElement | null>>({})
@@ -166,7 +238,6 @@ const finishEdit = (row: number, field: keyof Task) => {
 
 const onExport = () => console.log('Export clicked')
 const onArchive = () => console.log('Archive clicked')
-
 const onDelete = () => {
 	// @ts-ignore
 	const rowsToDelete = [...selectionStore.selectedTasks].sort((a, b) => b - a)
@@ -176,20 +247,23 @@ const onDelete = () => {
 	})
 	selectionStore.clearSelection()
 }
-
 const onClose = () => {
 	selectionStore.selectedTasks = []
+}
+const onSearch = (value: string) => {
+	searchQuery.value = value.toLowerCase().trim()
 }
 </script>
 
 <template>
-	<div class="flex items-center mb-4">
+	<div class="flex items-center mb-4 gap-4">
 		<Button
 			variant="primary"
 			@click="addNewTaskRow"
 		>
 			Add Task
 		</Button>
+		<SearchToggle @search="onSearch" />
 	</div>
 	<div class="flex flex-col max-w-screen-2xl mx-auto">
 		<div class="overflow-x-auto pb-4">
@@ -285,7 +359,7 @@ const onClose = () => {
 						>
 							<template v-if="tasks.length">
 								<tr
-									v-for="(task, index) in tasks"
+									v-for="(task, index) in filteredTasks"
 									:key="task.title + index"
 									class="bg-white transition-all duration-300 hover:bg-gray-50"
 								>
@@ -501,6 +575,49 @@ const onClose = () => {
 												<Pencil class="w-4 h-4 ml-2 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
 											</div>
 										</template>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="3"></td>
+									<td class="p-2">
+										<div class="flex w-full">
+											<div
+												v-for="(count, status) in taskStatusCounts"
+												:key="status"
+												class="h-10 transition-all duration-300"
+												:class="`bg-${statusVariant(status)}-200`"
+												:style="{ width: `${(count / tasks.length) * 100}%` }"
+											></div>
+										</div>
+									</td>
+									<td class="p-2">
+										<div class="flex w-full">
+											<div
+												v-for="(count, priority) in taskPriorityCounts"
+												:key="priority"
+												class="h-10 transition-all duration-300"
+												:class="`bg-${priorityVariant(priority)}-200`"
+												:style="{ width: `${(count / tasks.length) * 100}%` }"
+											></div>
+										</div>
+									</td>
+									<td class="p-2">
+										<div class="flex w-full">
+											<div
+												v-for="(count, type) in taskTypeCounts"
+												:key="type"
+												class="h-10 transition-all duration-300"
+												:class="`bg-${typeVariant(type)}-200`"
+												:style="{ width: `${(count / tasks.length) * 100}%` }"
+											></div>
+										</div>
+									</td>
+									<td></td>
+									<td class="p-5 text-sm text-gray-700 text-start">
+										{{ tasks.reduce((acc, task) => acc + task.estimatedSP || 0, 0) }}
+									</td>
+									<td class="p-5 text-sm text-gray-700 text-start">
+										{{ tasks.reduce((acc, task) => acc + task.actualSP || 0, 0) }}
 									</td>
 								</tr>
 							</template>
