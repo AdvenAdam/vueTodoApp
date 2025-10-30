@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick } from 'vue'
-import { CircleDot, Check, Pencil, ChevronsUpDown } from 'lucide-vue-next'
+import { Pencil, ChevronsUpDown } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import { useTaskStore } from '../store/task'
 import { useSelectionStore } from '../store/selection'
 import Button from './Button.vue'
 import Checkbox from './Checkbox.vue'
 import Badge from './Badge.vue'
-import type { Task } from '../types'
+import type { Task } from '../types/task'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import Multiselect from './Multiselect.vue'
@@ -15,13 +15,14 @@ import Toolbar from './Toolbar.vue'
 
 const store = useTaskStore()
 const selectionStore = useSelectionStore()
-const newTask = ref<Partial<Task> | null>(null)
+const newTask = ref<Task | null>(null)
 
 const { tasks, loading, error } = storeToRefs(store)
 
 onMounted(async () => {
 	await store.fetchTasks()
 })
+
 const allDevelopers = computed(() => {
 	const devSet = new Set<string>()
 	tasks.value.forEach((task) => {
@@ -33,13 +34,12 @@ const allDevelopers = computed(() => {
 	})
 	return Array.from(devSet).map((dev) => ({ value: dev, label: dev }))
 })
-const allStatuses = ['Ready to Start', 'In Progress', 'Waiting for review', 'Pending Deploy', 'Done', 'Stuck']
+
+const allStatuses: Task['status'][] = ['Ready to Start', 'In Progress', 'Waiting for review', 'Pending Deploy', 'Done', 'Stuck']
 
 const allChecked = computed(() => tasks.value.length > 0 && selectionStore.selectedTasks.length === tasks.value.length)
 
-const toggleAll = () => selectionStore.toggleAll(tasks.value)
-
-const toggleRowSelection = (task: any, index: number, checked: boolean) => selectionStore.toggleRow(task, index, checked)
+const toggleRowSelection = (task: Task, index: number, checked: boolean) => selectionStore.toggleRow(task, index, checked)
 
 const statusVariant = (status: Task['status']) => {
 	switch (status) {
@@ -107,41 +107,48 @@ const addNewTaskRow = () => {
 }
 
 const editingCell = ref<{ row: number; field: keyof Task } | null>(null)
-const localEditValue = ref<string | number | string[] | null>(null)
-const inputRefs = ref<{ [key: string]: HTMLInputElement | null }>({})
+const localEditValue = ref<string | number | Array<any> | null>(null)
+const inputRefs = ref<Record<string, HTMLInputElement | null>>({})
 
 const enableEdit = (row: number, field: keyof Task) => {
 	editingCell.value = { row, field }
-	const value = store.tasks[row][field]
+	const task = store.tasks[row]
+	if (!task) return
+	const value = task[field]
 
 	if (field === 'developer') {
 		localEditValue.value = Array.isArray(value) ? value.map((dev) => ({ value: dev, label: dev })) : value ? [{ value, label: value }] : []
 	} else if (Array.isArray(value)) {
 		localEditValue.value = value.join(', ')
-	} else if (typeof value === 'string') {
-		localEditValue.value = value || ''
+	} else if (typeof value === 'string' || typeof value === 'number') {
+		localEditValue.value = value
 	} else {
-		localEditValue.value = value || null
+		localEditValue.value = null
 	}
+
 	nextTick(() => {
 		if (field !== 'developer') {
-			console.log('met here')
 			const key = `${row}-${field}`
-			inputRefs.value?.focus?.()
-			inputRefs.value?.select?.()
+			const el = inputRefs.value[key]
+			el?.focus()
+			el?.select()
 		}
 	})
 }
 
 const finishEdit = (row: number, field: keyof Task) => {
-	const task = { ...store.tasks[row] }
+	const task = { ...store.tasks[row] } as Task
 
 	if (field === 'developer') {
 		task.developer = Array.isArray(localEditValue.value) ? (localEditValue.value as Array<{ value: string; label: string }>).map((d) => d.value) : []
 	} else if (field === 'date') {
 		if (localEditValue.value) {
-			const date = new Date(localEditValue.value)
-			const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' }
+			const date = new Date(localEditValue.value as string)
+			const options: Intl.DateTimeFormatOptions = {
+				day: '2-digit',
+				month: 'short',
+				year: 'numeric',
+			}
 			task.date = new Intl.DateTimeFormat('en-US', options).format(date)
 		} else {
 			task.date = ''
@@ -149,28 +156,24 @@ const finishEdit = (row: number, field: keyof Task) => {
 	} else if (field === 'estimatedSP' || field === 'actualSP') {
 		task[field] = Number(localEditValue.value) || 0
 	} else {
-		task[field] = localEditValue.value || ''
+		;(task as Record<string, any>)[field] = localEditValue.value ?? ''
 	}
 
-	store.tasks[row] = task
-
+	store.tasks[row] = task as Task
 	store.updateTask(task)
 	editingCell.value = null
 }
 
-const onExport = () => {
-	console.log('Export clicked')
-}
-const onArchive = () => {
-	console.log('Archive clicked')
-}
-const onDelete = () => {
-	const rowsToDelete = selectionStore.selectedTasks.sort((a, b) => b - a)
+const onExport = () => console.log('Export clicked')
+const onArchive = () => console.log('Archive clicked')
 
+const onDelete = () => {
+	// @ts-ignore
+	const rowsToDelete = [...selectionStore.selectedTasks].sort((a, b) => b - a)
 	rowsToDelete.forEach((row) => {
+		// @ts-ignore
 		store.tasks.splice(row, 1)
 	})
-
 	selectionStore.clearSelection()
 }
 
@@ -321,7 +324,7 @@ const onClose = () => {
 									>
 										<template v-if="editingCell?.row === index && editingCell?.field === 'developer'">
 											<Multiselect
-												v-model="localEditValue"
+												v-model="localEditValue as Array<any>"
 												:options="allDevelopers"
 												:taggable="true"
 												placeholder="Select developers"

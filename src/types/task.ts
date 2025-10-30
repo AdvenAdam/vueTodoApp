@@ -6,5 +6,5 @@ export type Task = {
 	type: 'Feature Enhancements' | 'Bug' | 'Other'
 	estimatedSP: number
 	actualSP: number
-	date?: string
+	date: string
 }

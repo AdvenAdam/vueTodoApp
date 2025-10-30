@@ -3,13 +3,18 @@ import { ref, watch } from 'vue'
 import Multiselect from 'vue-multiselect'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
 
+interface Option {
+	label: string
+	value: string
+}
+
 const props = defineProps({
 	modelValue: {
 		type: [Array, String],
 		default: () => [],
 	},
 	options: {
-		type: Array,
+		type: Array as () => Option[],
 		required: true,
 	},
 	label: {
