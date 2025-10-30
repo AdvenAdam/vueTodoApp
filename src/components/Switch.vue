@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import ToolbarButton from './ToolbarButton.vue'
 
-const selected = ref<'table' | 'kanban'>('kanban')
+const selected = ref<'table' | 'kanban'>('table')
 
 const emit = defineEmits<{
 	(mode: 'table' | 'kanban'): void

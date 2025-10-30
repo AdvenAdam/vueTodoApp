@@ -4,7 +4,7 @@ import Switch from './components/Switch.vue'
 import Table from './components/Table.vue'
 import Kanban from './components/Kanban.vue'
 
-const currentView = ref<'table' | 'kanban'>('kanban')
+const currentView = ref<'table' | 'kanban'>('table')
 
 function selectTable() {
 	currentView.value = 'table'
