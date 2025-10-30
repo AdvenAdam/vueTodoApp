@@ -1,12 +1,13 @@
 <script setup>
 import { computed } from 'vue'
 
-import { Archive, Trash2, Star, ArrowRight, Grid, Copy, Upload, Repeat } from 'lucide-vue-next'
+import { Archive, Trash2, Star, ArrowRight, Grid, Copy, Upload, Repeat, Table2, SquareDashedKanban } from 'lucide-vue-next'
 
 const props = defineProps({
 	icon: String,
 	label: String,
 	disabled: Boolean,
+	selected: Boolean,
 })
 
 const iconComponent = computed(() => {
@@ -27,6 +28,10 @@ const iconComponent = computed(() => {
 			return Upload
 		case 'convert':
 			return Repeat
+		case 'table':
+			return Table2
+		case 'kanban':
+			return SquareDashedKanban
 		default:
 			return null
 	}
@@ -34,7 +39,11 @@ const iconComponent = computed(() => {
 </script>
 <template>
 	<button
-		:class="['flex items-center space-x-1 p-2 rounded hover:bg-gray-100', disabled ? 'opacity-50 cursor-not-allowed' : '']"
+		:class="[
+			'flex items-center space-x-1 p-2 rounded hover:bg-gray-100',
+			disabled ? 'opacity-50 cursor-not-allowed' : '',
+			selected ? 'bg-gray-200' : '',
+		]"
 		:disabled="disabled"
 		@click="$emit('click')"
 	>

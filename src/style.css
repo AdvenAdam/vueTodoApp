@@ -6,6 +6,8 @@
 	}
 }
 @source inline("bg-{gray,red,blue,emerald,purple,green,yellow}-200");
+@source inline("bg-{gray,red,blue,emerald,purple,green,yellow}-100");
+@source inline("text-{gray,red,blue,emerald,purple,green,yellow}-600");
 
 :root {
 	font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -63,4 +65,11 @@ h1 {
 	a:hover {
 		color: #747bff;
 	}
+}
+::-webkit-scrollbar {
+	height: 6px;
+}
+::-webkit-scrollbar-thumb {
+	background: rgba(0, 0, 0, 0.2);
+	border-radius: 3px;
 }
