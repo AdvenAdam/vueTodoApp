@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
 import Table from './components/Table.vue'
-import Button from './components/Button.vue'
-import Toolbar from './components/Toolbar.vue'
 </script>
 
 <template>
@@ -15,5 +12,4 @@ import Toolbar from './components/Toolbar.vue'
 	</div>
 
 	<Table />
-	<!-- <Toolbar /> -->
 </template>
