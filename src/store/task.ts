@@ -6,6 +6,9 @@ interface TaskState {
 	tasks: Task[]
 	loading: boolean
 	error: string | null
+	sortKey: keyof Task | null
+	sortOrder: 'asc' | 'desc'
+	searchQuery: string
 }
 
 export const useTaskStore = defineStore('task', {
@@ -13,11 +16,18 @@ export const useTaskStore = defineStore('task', {
 		tasks: [],
 		loading: false,
 		error: null,
+		sortKey: null,
+		sortOrder: 'asc',
+		searchQuery: '',
 	}),
 
 	getters: {
 		allCompleted: (state) => state.tasks.length > 0 && state.tasks.every((t) => t.status === 'Done'),
 		someCompleted: (state) => state.tasks.some((t) => t.status === 'Done'),
+		filteredTasks: (state) => {
+			if (!state.searchQuery) return state.tasks
+			return state.tasks.filter((task) => task.title.toLowerCase().includes(state.searchQuery.toLowerCase()))
+		},
 	},
 
 	actions: {
@@ -66,6 +76,33 @@ export const useTaskStore = defineStore('task', {
 			if (row >= 0 && row < this.tasks.length) {
 				this.tasks.splice(row, 1)
 			}
+		},
+		sortTasks(key: keyof Task) {
+			if (this.sortKey === key) {
+				this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc'
+			} else {
+				this.sortKey = key
+				this.sortOrder = 'asc'
+			}
+
+			this.tasks.sort((a, b) => {
+				const valA = a[key]
+				const valB = b[key]
+
+				if (Array.isArray(valA) && Array.isArray(valB)) {
+					return valA.join(', ').localeCompare(valB.join(', ')) * (this.sortOrder === 'asc' ? 1 : -1)
+				}
+
+				if (typeof valA === 'string' && typeof valB === 'string') {
+					return valA.localeCompare(valB) * (this.sortOrder === 'asc' ? 1 : -1)
+				}
+
+				if (typeof valA === 'number' && typeof valB === 'number') {
+					return (valA - valB) * (this.sortOrder === 'asc' ? 1 : -1)
+				}
+
+				return 0
+			})
 		},
 	},
 })

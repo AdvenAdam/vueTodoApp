@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, nextTick } from 'vue'
-import { CircleDot, Check, Pencil } from 'lucide-vue-next'
+import { CircleDot, Check, Pencil, ChevronsUpDown } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import { useTaskStore } from '../store/task'
 import { useSelectionStore } from '../store/selection'
@@ -201,14 +201,78 @@ const onClose = () => {
 										@change="(checked) => selectionStore.toggleAll(tasks, checked)"
 									/>
 								</th>
-								<th class="th-text w-64">Task</th>
-								<th class="th-text">Developer</th>
-								<th class="th-text">Status</th>
-								<th class="th-text">Priority</th>
-								<th class="th-text">Type</th>
-								<th class="th-text w-40">Date</th>
-								<th class="th-text w-32">Est. SP</th>
-								<th class="th-text w-32">Actual SP</th>
+								<th
+									class="th-text w-64 cursor-pointer group"
+									@click="store.sortTasks('title')"
+								>
+									<span class="flex items-center justify-between">
+										Task
+										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+									</span>
+								</th>
+								<th
+									class="th-text cursor-pointer group"
+									@click="store.sortTasks('developer')"
+								>
+									<span class="flex items-center justify-between">
+										Developer
+										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+									</span>
+								</th>
+								<th
+									class="th-text cursor-pointer group"
+									@click="store.sortTasks('status')"
+								>
+									<span class="flex items-center justify-between">
+										Status
+										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+									</span>
+								</th>
+								<th
+									class="th-text cursor-pointer group"
+									@click="store.sortTasks('priority')"
+								>
+									<span class="flex items-center justify-between">
+										Priority
+										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+									</span>
+								</th>
+								<th
+									class="th-text cursor-pointer group"
+									@click="store.sortTasks('type')"
+								>
+									<span class="flex items-center justify-between">
+										Type
+										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+									</span>
+								</th>
+								<th
+									class="th-text w-40 cursor-pointer group"
+									@click="store.sortTasks('date')"
+								>
+									<span class="flex items-center justify-between">
+										Date
+										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+									</span>
+								</th>
+								<th
+									class="th-text w-32 cursor-pointer group"
+									@click="store.sortTasks('estimatedSP')"
+								>
+									<span class="flex items-center justify-between">
+										Est. SP
+										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+									</span>
+								</th>
+								<th
+									class="th-text w-32 cursor-pointer group"
+									@click="store.sortTasks('actualSP')"
+								>
+									<span class="flex items-center justify-between">
+										Actual SP
+										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+									</span>
+								</th>
 							</tr>
 						</thead>
 
