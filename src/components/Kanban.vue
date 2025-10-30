@@ -117,7 +117,7 @@ const onTaskSelected = (value: string) => {
 </script>
 
 <template>
-	<div class="flex flex-col space-y-4">
+	<div class="flex flex-col space-y-4 w-full transform transition-all duration-500 ease-out opacity-0 translate-y-4 blur-sm animate-fade-up">
 		<div
 			v-if="taskStore.loading"
 			class="text-center py-8 text-gray-500"

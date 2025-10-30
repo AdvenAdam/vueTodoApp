@@ -263,394 +263,396 @@ const onTaskSelected = (value: string) => {
 </script>
 
 <template>
-	<div class="flex items-center mb-4 gap-4">
-		<Button
-			variant="primary"
-			@click="addNewTaskRow"
-		>
-			Add Task
-		</Button>
-		<SearchToggle @search="onSearch" />
-		<SearchDevToggle
-			:options="allDevelopers"
-			@search="onTaskSelected"
-		/>
-	</div>
-	<div class="flex flex-col max-w-screen-2xl mx-auto">
-		<div class="overflow-x-auto pb-4">
-			<div class="min-w-full inline-block align-middle">
-				<div class="overflow-hidden border rounded-lg border-gray-300">
-					<table class="table-auto min-w-full rounded-xl">
-						<thead>
-							<tr class="bg-gray-50">
-								<th class="p-5 text-left">
-									<Checkbox
-										:modelValue="allChecked"
-										@change="(checked) => selectionStore.toggleAll(tasks, checked)"
-									/>
-								</th>
-								<th
-									class="th-text w-64 cursor-pointer group"
-									@click="store.sortTasks('title')"
-								>
-									<span class="flex items-center justify-between">
-										Task
-										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-									</span>
-								</th>
-								<th
-									class="th-text cursor-pointer group"
-									@click="store.sortTasks('developer')"
-								>
-									<span class="flex items-center justify-between">
-										Developer
-										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-									</span>
-								</th>
-								<th
-									class="th-text cursor-pointer group"
-									@click="store.sortTasks('status')"
-								>
-									<span class="flex items-center justify-between">
-										Status
-										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-									</span>
-								</th>
-								<th
-									class="th-text cursor-pointer group"
-									@click="store.sortTasks('priority')"
-								>
-									<span class="flex items-center justify-between">
-										Priority
-										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-									</span>
-								</th>
-								<th
-									class="th-text cursor-pointer group"
-									@click="store.sortTasks('type')"
-								>
-									<span class="flex items-center justify-between">
-										Type
-										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-									</span>
-								</th>
-								<th
-									class="th-text w-40 cursor-pointer group"
-									@click="store.sortTasks('date')"
-								>
-									<span class="flex items-center justify-between">
-										Date
-										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-									</span>
-								</th>
-								<th
-									class="th-text w-32 cursor-pointer group"
-									@click="store.sortTasks('estimatedSP')"
-								>
-									<span class="flex items-center justify-between">
-										Est. SP
-										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-									</span>
-								</th>
-								<th
-									class="th-text w-32 cursor-pointer group"
-									@click="store.sortTasks('actualSP')"
-								>
-									<span class="flex items-center justify-between">
-										Actual SP
-										<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-									</span>
-								</th>
-							</tr>
-						</thead>
-
-						<tbody
-							v-if="!loading"
-							class="divide-y divide-gray-300"
-						>
-							<template v-if="tasks.length">
-								<tr
-									v-for="(task, index) in filteredTasks"
-									:key="task.title + index"
-									class="bg-white transition-all duration-300 hover:bg-gray-50"
-								>
-									<td class="p-5">
+	<div class="w-full transform transition-all duration-500 ease-out opacity-0 translate-y-4 blur-sm animate-fade-up">
+		<div class="flex items-center mb-4 gap-4">
+			<Button
+				variant="primary"
+				@click="addNewTaskRow"
+			>
+				Add Task
+			</Button>
+			<SearchToggle @search="onSearch" />
+			<SearchDevToggle
+				:options="allDevelopers"
+				@search="onTaskSelected"
+			/>
+		</div>
+		<div class="flex flex-col max-w-screen-2xl mx-auto">
+			<div class="overflow-x-auto pb-4">
+				<div class="min-w-full inline-block align-middle">
+					<div class="overflow-hidden border rounded-lg border-gray-300">
+						<table class="table-auto min-w-full rounded-xl">
+							<thead>
+								<tr class="bg-gray-50">
+									<th class="p-5 text-left">
 										<Checkbox
-											:modelValue="selectionStore.selectedTasks.some((t) => t.row === index + 1)"
-											@change="(checked) => toggleRowSelection(task, index, checked)"
+											:modelValue="allChecked"
+											@change="(checked) => selectionStore.toggleAll(tasks, checked)"
 										/>
-									</td>
-
-									<td
-										class="p-5 font-medium text-gray-800 group cursor-pointer"
-										@click="enableEdit(index, 'title')"
+									</th>
+									<th
+										class="th-text w-64 cursor-pointer group"
+										@click="store.sortTasks('title')"
 									>
-										<template v-if="editingCell?.row === index && editingCell?.field === 'title'">
-											<input
-												ref="el => inputRefs.value[`${index}-title`] = el"
-												type="text"
-												v-model="localEditValue"
-												@blur="finishEdit(index, 'title')"
-												@keyup.enter="finishEdit(index, 'title')"
-												class="border p-1 rounded w-full"
-												autofocus
+										<span class="flex items-center justify-between">
+											Task
+											<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+										</span>
+									</th>
+									<th
+										class="th-text cursor-pointer group"
+										@click="store.sortTasks('developer')"
+									>
+										<span class="flex items-center justify-between">
+											Developer
+											<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+										</span>
+									</th>
+									<th
+										class="th-text cursor-pointer group"
+										@click="store.sortTasks('status')"
+									>
+										<span class="flex items-center justify-between">
+											Status
+											<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+										</span>
+									</th>
+									<th
+										class="th-text cursor-pointer group"
+										@click="store.sortTasks('priority')"
+									>
+										<span class="flex items-center justify-between">
+											Priority
+											<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+										</span>
+									</th>
+									<th
+										class="th-text cursor-pointer group"
+										@click="store.sortTasks('type')"
+									>
+										<span class="flex items-center justify-between">
+											Type
+											<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+										</span>
+									</th>
+									<th
+										class="th-text w-40 cursor-pointer group"
+										@click="store.sortTasks('date')"
+									>
+										<span class="flex items-center justify-between">
+											Date
+											<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+										</span>
+									</th>
+									<th
+										class="th-text w-32 cursor-pointer group"
+										@click="store.sortTasks('estimatedSP')"
+									>
+										<span class="flex items-center justify-between">
+											Est. SP
+											<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+										</span>
+									</th>
+									<th
+										class="th-text w-32 cursor-pointer group"
+										@click="store.sortTasks('actualSP')"
+									>
+										<span class="flex items-center justify-between">
+											Actual SP
+											<ChevronsUpDown class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+										</span>
+									</th>
+								</tr>
+							</thead>
+
+							<tbody
+								v-if="!loading"
+								class="divide-y divide-gray-300"
+							>
+								<template v-if="tasks.length">
+									<tr
+										v-for="(task, index) in filteredTasks"
+										:key="task.title + index"
+										class="bg-white transition-all duration-300 hover:bg-gray-50"
+									>
+										<td class="p-5">
+											<Checkbox
+												:modelValue="selectionStore.selectedTasks.some((t) => t.row === index)"
+												@change="(checked) => toggleRowSelection(task, index, checked)"
 											/>
-										</template>
-										<template v-else>
-											<div class="flex items-center justify-between">
-												<span class="text-start">{{ task.title }}</span>
-												<Pencil class="w-4 h-4 ml-2 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-											</div>
-										</template>
-									</td>
-									<td
-										class="p-5 text-sm text-gray-700 cursor-pointer group"
-										@click="enableEdit(index, 'developer')"
-									>
-										<template v-if="editingCell?.row === index && editingCell?.field === 'developer'">
-											<Multiselect
-												v-model="localEditValue as Array<any>"
-												:options="allDevelopers"
-												:taggable="true"
-												placeholder="Select developers"
-												@close="() => finishEdit(index, 'developer')"
-											/>
-										</template>
-										<template v-else>
-											<div class="flex items-center justify-between">
-												{{ Array.isArray(task.developer) ? task.developer.join(', ') : task.developer || '-' }}
-												<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-											</div>
-										</template>
-									</td>
-									<td
-										class="p-5 text-sm text-gray-700 cursor-pointer group"
-										@click="enableEdit(index, 'status')"
-									>
-										<template v-if="editingCell?.row === index && editingCell?.field === 'status'">
-											<select
-												v-model="localEditValue"
-												@blur="finishEdit(index, 'status')"
-												@change="finishEdit(index, 'status')"
-												class="border p-1 rounded w-full"
-											>
-												<option
-													v-for="status in allStatuses"
-													:key="status"
-													:value="status"
-												>
-													{{ status }}
-												</option>
-											</select>
-										</template>
-										<template v-else>
-											<div class="flex items-center justify-between">
-												<Badge
-													:text="task.status"
-													:variant="statusVariant(task.status)"
-												/>
-												<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-											</div>
-										</template>
-									</td>
+										</td>
 
-									<td
-										class="p-5 text-sm text-gray-700 cursor-pointer group"
-										@click="enableEdit(index, 'priority')"
-									>
-										<template v-if="editingCell?.row === index && editingCell?.field === 'priority'">
-											<select
-												v-model="localEditValue"
-												@blur="finishEdit(index, 'priority')"
-												@change="finishEdit(index, 'priority')"
-												class="border p-1 rounded w-full"
-											>
-												<option
-													v-for="priority in ['Low', 'Medium', 'High', 'Critical', 'Best Effort']"
-													:key="priority"
-													:value="priority"
-												>
-													{{ priority }}
-												</option>
-											</select>
-										</template>
-										<template v-else>
-											<div class="flex items-center justify-between">
-												<Badge
-													:text="task.priority"
-													:variant="priorityVariant(task.priority)"
-												/>
-												<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-											</div>
-										</template>
-									</td>
-
-									<td
-										class="p-5 text-sm text-gray-700 cursor-pointer group"
-										@click="enableEdit(index, 'type')"
-									>
-										<template v-if="editingCell?.row === index && editingCell?.field === 'type'">
-											<select
-												v-model="localEditValue"
-												@blur="finishEdit(index, 'type')"
-												@change="finishEdit(index, 'type')"
-												class="border p-1 rounded w-full"
-											>
-												<option
-													v-for="type in ['Feature Enhancements', 'Bug', 'Other']"
-													:key="type"
-													:value="type"
-												>
-													{{ type }}
-												</option>
-											</select>
-										</template>
-										<template v-else>
-											<div class="flex items-center justify-between">
-												<Badge
-													:text="task.type"
-													:variant="typeVariant(task.type)"
-												/>
-												<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-											</div>
-										</template>
-									</td>
-
-									<td
-										class="p-5 text-sm text-gray-600 cursor-pointer group"
-										@click="enableEdit(index, 'date')"
-									>
-										<template v-if="editingCell?.row === index && editingCell?.field === 'date'">
-											<div class="max-w-40">
-												<VueDatePicker
+										<td
+											class="p-5 font-medium text-gray-800 group cursor-pointer"
+											@click="enableEdit(index, 'title')"
+										>
+											<template v-if="editingCell?.row === index && editingCell?.field === 'title'">
+												<input
+													ref="el => inputRefs.value[`${index}-title`] = el"
+													type="text"
 													v-model="localEditValue"
-													:enable-time-picker="false"
-													:input-class="'border p-1 rounded w-full'"
-													@blur="() => finishEdit(index, 'date')"
+													@blur="finishEdit(index, 'title')"
+													@keyup.enter="finishEdit(index, 'title')"
+													class="border p-1 rounded w-full"
+													autofocus
 												/>
-											</div>
-										</template>
-										<template v-else>
-											<div class="flex items-center justify-between">
-												<span class="text-sm text-gray-700">{{ task.date || '-' }}</span>
-												<Pencil class="w-4 h-4 ml-2 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-											</div>
-										</template>
-									</td>
+											</template>
+											<template v-else>
+												<div class="flex items-center justify-between">
+													<span class="text-start">{{ task.title }}</span>
+													<Pencil class="w-4 h-4 ml-2 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+												</div>
+											</template>
+										</td>
+										<td
+											class="p-5 text-sm text-gray-700 cursor-pointer group"
+											@click="enableEdit(index, 'developer')"
+										>
+											<template v-if="editingCell?.row === index && editingCell?.field === 'developer'">
+												<Multiselect
+													v-model="localEditValue as Array<any>"
+													:options="allDevelopers"
+													:taggable="true"
+													placeholder="Select developers"
+													@close="() => finishEdit(index, 'developer')"
+												/>
+											</template>
+											<template v-else>
+												<div class="flex items-center justify-between">
+													{{ Array.isArray(task.developer) ? task.developer.join(', ') : task.developer || '-' }}
+													<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+												</div>
+											</template>
+										</td>
+										<td
+											class="p-5 text-sm text-gray-700 cursor-pointer group"
+											@click="enableEdit(index, 'status')"
+										>
+											<template v-if="editingCell?.row === index && editingCell?.field === 'status'">
+												<select
+													v-model="localEditValue"
+													@blur="finishEdit(index, 'status')"
+													@change="finishEdit(index, 'status')"
+													class="border p-1 rounded w-full"
+												>
+													<option
+														v-for="status in allStatuses"
+														:key="status"
+														:value="status"
+													>
+														{{ status }}
+													</option>
+												</select>
+											</template>
+											<template v-else>
+												<div class="flex items-center justify-between">
+													<Badge
+														:text="task.status"
+														:variant="statusVariant(task.status)"
+													/>
+													<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+												</div>
+											</template>
+										</td>
 
-									<td
-										class="p-5 text-sm text-gray-700 group cursor-pointer"
-										@click="enableEdit(index, 'estimatedSP')"
-									>
-										<template v-if="editingCell?.row === index && editingCell?.field === 'estimatedSP'">
-											<input
-												ref="el => inputRefs.value[`${index}-estimatedSP`] = el"
-												type="number"
-												min="0"
-												step="1"
-												v-model.number="localEditValue"
-												@blur="finishEdit(index, 'estimatedSP')"
-												@keyup.enter="finishEdit(index, 'estimatedSP')"
-												class="border p-1 rounded w-20"
-												autofocus
-											/>
-										</template>
-										<template v-else>
-											<div class="flex items-center justify-between">
-												<span>{{ task.estimatedSP }}</span>
-												<Pencil class="w-4 h-4 ml-2 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-											</div>
-										</template>
-									</td>
+										<td
+											class="p-5 text-sm text-gray-700 cursor-pointer group"
+											@click="enableEdit(index, 'priority')"
+										>
+											<template v-if="editingCell?.row === index && editingCell?.field === 'priority'">
+												<select
+													v-model="localEditValue"
+													@blur="finishEdit(index, 'priority')"
+													@change="finishEdit(index, 'priority')"
+													class="border p-1 rounded w-full"
+												>
+													<option
+														v-for="priority in ['Low', 'Medium', 'High', 'Critical', 'Best Effort']"
+														:key="priority"
+														:value="priority"
+													>
+														{{ priority }}
+													</option>
+												</select>
+											</template>
+											<template v-else>
+												<div class="flex items-center justify-between">
+													<Badge
+														:text="task.priority"
+														:variant="priorityVariant(task.priority)"
+													/>
+													<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+												</div>
+											</template>
+										</td>
 
-									<td
-										class="p-5 text-sm text-gray-700 group cursor-pointer"
-										@click="enableEdit(index, 'actualSP')"
-									>
-										<template v-if="editingCell?.row === index && editingCell?.field === 'actualSP'">
-											<input
-												ref="el => inputRefs.value[`${index}-actualSP`] = el"
-												type="number"
-												min="0"
-												step="1"
-												v-model.number="localEditValue"
-												@blur="finishEdit(index, 'actualSP')"
-												@keyup.enter="finishEdit(index, 'actualSP')"
-												class="border p-1 rounded w-full max-w-20"
-												autofocus
-											/>
-										</template>
-										<template v-else>
-											<div class="flex items-center justify-between">
-												<span>{{ task.actualSP }}</span>
-												<Pencil class="w-4 h-4 ml-2 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+										<td
+											class="p-5 text-sm text-gray-700 cursor-pointer group"
+											@click="enableEdit(index, 'type')"
+										>
+											<template v-if="editingCell?.row === index && editingCell?.field === 'type'">
+												<select
+													v-model="localEditValue"
+													@blur="finishEdit(index, 'type')"
+													@change="finishEdit(index, 'type')"
+													class="border p-1 rounded w-full"
+												>
+													<option
+														v-for="type in ['Feature Enhancements', 'Bug', 'Other']"
+														:key="type"
+														:value="type"
+													>
+														{{ type }}
+													</option>
+												</select>
+											</template>
+											<template v-else>
+												<div class="flex items-center justify-between">
+													<Badge
+														:text="task.type"
+														:variant="typeVariant(task.type)"
+													/>
+													<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+												</div>
+											</template>
+										</td>
+
+										<td
+											class="p-5 text-sm text-gray-600 cursor-pointer group"
+											@click="enableEdit(index, 'date')"
+										>
+											<template v-if="editingCell?.row === index && editingCell?.field === 'date'">
+												<div class="max-w-40">
+													<VueDatePicker
+														v-model="localEditValue"
+														:enable-time-picker="false"
+														:input-class="'border p-1 rounded w-full'"
+														@blur="() => finishEdit(index, 'date')"
+													/>
+												</div>
+											</template>
+											<template v-else>
+												<div class="flex items-center justify-between">
+													<span class="text-sm text-gray-700">{{ task.date || '-' }}</span>
+													<Pencil class="w-4 h-4 ml-2 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+												</div>
+											</template>
+										</td>
+
+										<td
+											class="p-5 text-sm text-gray-700 group cursor-pointer"
+											@click="enableEdit(index, 'estimatedSP')"
+										>
+											<template v-if="editingCell?.row === index && editingCell?.field === 'estimatedSP'">
+												<input
+													ref="el => inputRefs.value[`${index}-estimatedSP`] = el"
+													type="number"
+													min="0"
+													step="1"
+													v-model.number="localEditValue"
+													@blur="finishEdit(index, 'estimatedSP')"
+													@keyup.enter="finishEdit(index, 'estimatedSP')"
+													class="border p-1 rounded w-20"
+													autofocus
+												/>
+											</template>
+											<template v-else>
+												<div class="flex items-center justify-between">
+													<span>{{ task.estimatedSP }}</span>
+													<Pencil class="w-4 h-4 ml-2 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+												</div>
+											</template>
+										</td>
+
+										<td
+											class="p-5 text-sm text-gray-700 group cursor-pointer"
+											@click="enableEdit(index, 'actualSP')"
+										>
+											<template v-if="editingCell?.row === index && editingCell?.field === 'actualSP'">
+												<input
+													ref="el => inputRefs.value[`${index}-actualSP`] = el"
+													type="number"
+													min="0"
+													step="1"
+													v-model.number="localEditValue"
+													@blur="finishEdit(index, 'actualSP')"
+													@keyup.enter="finishEdit(index, 'actualSP')"
+													class="border p-1 rounded w-full max-w-20"
+													autofocus
+												/>
+											</template>
+											<template v-else>
+												<div class="flex items-center justify-between">
+													<span>{{ task.actualSP }}</span>
+													<Pencil class="w-4 h-4 ml-2 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+												</div>
+											</template>
+										</td>
+									</tr>
+									<tr>
+										<td colspan="3"></td>
+										<td class="p-2">
+											<div class="flex w-full">
+												<div
+													v-for="(count, status) in taskStatusCounts"
+													:key="status"
+													class="h-10 transition-all duration-300"
+													:class="`bg-${statusVariant(status)}-200`"
+													:style="{ width: `${(count / tasks.length) * 100}%` }"
+												></div>
 											</div>
-										</template>
+										</td>
+										<td class="p-2">
+											<div class="flex w-full">
+												<div
+													v-for="(count, priority) in taskPriorityCounts"
+													:key="priority"
+													class="h-10 transition-all duration-300"
+													:class="`bg-${priorityVariant(priority)}-200`"
+													:style="{ width: `${(count / tasks.length) * 100}%` }"
+												></div>
+											</div>
+										</td>
+										<td class="p-2">
+											<div class="flex w-full">
+												<div
+													v-for="(count, type) in taskTypeCounts"
+													:key="type"
+													class="h-10 transition-all duration-300"
+													:class="`bg-${typeVariant(type)}-200`"
+													:style="{ width: `${(count / tasks.length) * 100}%` }"
+												></div>
+											</div>
+										</td>
+										<td></td>
+										<td class="p-5 text-sm text-gray-700 text-start">
+											{{ tasks.reduce((acc, task) => acc + task.estimatedSP || 0, 0) }}
+										</td>
+										<td class="p-5 text-sm text-gray-700 text-start">
+											{{ tasks.reduce((acc, task) => acc + task.actualSP || 0, 0) }}
+										</td>
+									</tr>
+								</template>
+
+								<tr v-if="loading">
+									<td
+										colspan="9"
+										class="text-center py-10 text-gray-500"
+									>
+										Loading tasks...
 									</td>
 								</tr>
-								<tr>
-									<td colspan="3"></td>
-									<td class="p-2">
-										<div class="flex w-full">
-											<div
-												v-for="(count, status) in taskStatusCounts"
-												:key="status"
-												class="h-10 transition-all duration-300"
-												:class="`bg-${statusVariant(status)}-200`"
-												:style="{ width: `${(count / tasks.length) * 100}%` }"
-											></div>
-										</div>
-									</td>
-									<td class="p-2">
-										<div class="flex w-full">
-											<div
-												v-for="(count, priority) in taskPriorityCounts"
-												:key="priority"
-												class="h-10 transition-all duration-300"
-												:class="`bg-${priorityVariant(priority)}-200`"
-												:style="{ width: `${(count / tasks.length) * 100}%` }"
-											></div>
-										</div>
-									</td>
-									<td class="p-2">
-										<div class="flex w-full">
-											<div
-												v-for="(count, type) in taskTypeCounts"
-												:key="type"
-												class="h-10 transition-all duration-300"
-												:class="`bg-${typeVariant(type)}-200`"
-												:style="{ width: `${(count / tasks.length) * 100}%` }"
-											></div>
-										</div>
-									</td>
-									<td></td>
-									<td class="p-5 text-sm text-gray-700 text-start">
-										{{ tasks.reduce((acc, task) => acc + task.estimatedSP || 0, 0) }}
-									</td>
-									<td class="p-5 text-sm text-gray-700 text-start">
-										{{ tasks.reduce((acc, task) => acc + task.actualSP || 0, 0) }}
+								<tr v-if="error">
+									<td
+										colspan="9"
+										class="text-center py-10 text-gray-500"
+									>
+										Error loading tasks {{ error }}
 									</td>
 								</tr>
-							</template>
-
-							<tr v-if="loading">
-								<td
-									colspan="9"
-									class="text-center py-10 text-gray-500"
-								>
-									Loading tasks...
-								</td>
-							</tr>
-							<tr v-if="error">
-								<td
-									colspan="9"
-									class="text-center py-10 text-gray-500"
-								>
-									Error loading tasks {{ error }}
-								</td>
-							</tr>
-						</tbody>
-					</table>
+							</tbody>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>
