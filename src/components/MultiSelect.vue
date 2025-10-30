@@ -1,11 +1,11 @@
-<script setup>
+<script setup lang="ts">
 import { ref, watch } from 'vue'
 import Multiselect from 'vue-multiselect'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
 
 const props = defineProps({
 	modelValue: {
-		type: Array,
+		type: [Array, String],
 		default: () => [],
 	},
 	options: {
@@ -16,31 +16,51 @@ const props = defineProps({
 		type: String,
 		default: '',
 	},
+	single: {
+		type: Boolean,
+		default: false,
+	},
 	onClose: {
 		type: Function,
 		default: null,
 	},
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue', 'update:options'])
 
-const internalValue = ref([...props.modelValue])
+const internalValue = ref<Array<any>>([...props.modelValue])
+const optionsList = ref<Array<any>>([...props.options])
 
 watch(
 	() => props.modelValue,
 	(newVal) => {
-		internalValue.value = [...newVal]
+		internalValue.value = Array.isArray(newVal) ? [...newVal] : []
 	}
 )
 
-function updateValue(value) {
-	emit('update:modelValue', value)
-}
+watch(
+	internalValue,
+	(val) => {
+		if (JSON.stringify(val) !== JSON.stringify(props.modelValue)) {
+			emit('update:modelValue', [...val])
+		}
+	},
+	{ deep: true }
+)
 
 function handleClose() {
 	if (props.onClose) {
 		props.onClose(internalValue.value)
 	}
+}
+function addTag(newTag: string) {
+	const tag = { label: newTag, value: newTag }
+
+	if (!props.options.find((t) => t.value === newTag)) {
+		emit('update:options', [...props.options, tag])
+	}
+
+	emit('update:modelValue', [...props.modelValue, tag])
 }
 </script>
 
@@ -54,7 +74,7 @@ function handleClose() {
 
 		<Multiselect
 			v-model="internalValue"
-			:options="options"
+			:options="optionsList"
 			:multiple="true"
 			:close-on-select="false"
 			:clear-on-select="false"
@@ -62,8 +82,9 @@ function handleClose() {
 			placeholder="Select options"
 			label="label"
 			track-by="value"
-			@input="updateValue"
+			:taggable="true"
 			@close="handleClose"
+			@tag="addTag"
 			class="border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
 		/>
 	</div>

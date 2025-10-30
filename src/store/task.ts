@@ -62,8 +62,10 @@ export const useTaskStore = defineStore('task', {
 			if (index !== -1) this.tasks[index] = updatedTask
 		},
 
-		deleteTask(title: string) {
-			this.tasks = this.tasks.filter((task) => task.title !== title)
+		deleteTask(row: number) {
+			if (row >= 0 && row < this.tasks.length) {
+				this.tasks.splice(row, 1)
+			}
 		},
 	},
 })

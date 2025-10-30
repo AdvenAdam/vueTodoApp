@@ -10,6 +10,8 @@ import Badge from './Badge.vue'
 import type { Task } from '../types'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import Multiselect from './Multiselect.vue'
+import Toolbar from './Toolbar.vue'
 
 const store = useTaskStore()
 const selectionStore = useSelectionStore()
@@ -20,6 +22,18 @@ const { tasks, loading, error } = storeToRefs(store)
 onMounted(async () => {
 	await store.fetchTasks()
 })
+const allDevelopers = computed(() => {
+	const devSet = new Set<string>()
+	tasks.value.forEach((task) => {
+		if (Array.isArray(task.developer)) {
+			task.developer.forEach((dev) => devSet.add(dev))
+		} else if (task.developer) {
+			devSet.add(task.developer)
+		}
+	})
+	return Array.from(devSet).map((dev) => ({ value: dev, label: dev }))
+})
+const allStatuses = ['Ready to Start', 'In Progress', 'Waiting for review', 'Pending Deploy', 'Done', 'Stuck']
 
 const allChecked = computed(() => tasks.value.length > 0 && selectionStore.selectedTasks.length === tasks.value.length)
 
@@ -87,46 +101,81 @@ const addNewTaskRow = () => {
 		actualSP: 0,
 	}
 
-	if (newTask.value && newTask.value.title) {
-		tasks.value.unshift(newTask.value as Task)
-		newTask.value = null
-	}
+	store.addTask(newTask.value as Task)
+	newTask.value = null
+	selectionStore.updateRows()
 }
 
 const editingCell = ref<{ row: number; field: keyof Task } | null>(null)
-const localEditValue = ref<string | number | null>(null)
+const localEditValue = ref<string | number | string[] | null>(null)
 const inputRefs = ref<{ [key: string]: HTMLInputElement | null }>({})
 
 const enableEdit = (row: number, field: keyof Task) => {
 	editingCell.value = { row, field }
 	const value = store.tasks[row][field]
 
-	if (Array.isArray(value)) {
+	if (field === 'developer') {
+		localEditValue.value = Array.isArray(value) ? value.map((dev) => ({ value: dev, label: dev })) : value ? [{ value, label: value }] : []
+	} else if (Array.isArray(value)) {
 		localEditValue.value = value.join(', ')
+	} else if (typeof value === 'string') {
+		localEditValue.value = value || ''
 	} else {
 		localEditValue.value = value || null
 	}
 	nextTick(() => {
-		const key = `${row}-${field}`
-		inputRefs.value?.focus?.()
-		inputRefs.value?.select?.()
+		if (field !== 'developer') {
+			console.log('met here')
+			const key = `${row}-${field}`
+			inputRefs.value?.focus?.()
+			inputRefs.value?.select?.()
+		}
 	})
 }
 
 const finishEdit = (row: number, field: keyof Task) => {
-	if (field === 'date') {
+	const task = { ...store.tasks[row] }
+
+	if (field === 'developer') {
+		task.developer = Array.isArray(localEditValue.value) ? (localEditValue.value as Array<{ value: string; label: string }>).map((d) => d.value) : []
+	} else if (field === 'date') {
 		if (localEditValue.value) {
 			const date = new Date(localEditValue.value)
 			const options: Intl.DateTimeFormatOptions = { day: '2-digit', month: 'short', year: 'numeric' }
-			store.tasks[row][field] = new Intl.DateTimeFormat('en-US', options).format(date)
+			task.date = new Intl.DateTimeFormat('en-US', options).format(date)
 		} else {
-			store.tasks[row][field] = ''
+			task.date = ''
 		}
+	} else if (field === 'estimatedSP' || field === 'actualSP') {
+		task[field] = Number(localEditValue.value) || 0
 	} else {
-		store.tasks[row][field] = localEditValue.value
+		task[field] = localEditValue.value || ''
 	}
-	store.updateTask(store.tasks[row])
+
+	store.tasks[row] = task
+
+	store.updateTask(task)
 	editingCell.value = null
+}
+
+const onExport = () => {
+	console.log('Export clicked')
+}
+const onArchive = () => {
+	console.log('Archive clicked')
+}
+const onDelete = () => {
+	const rowsToDelete = selectionStore.selectedTasks.sort((a, b) => b - a)
+
+	rowsToDelete.forEach((row) => {
+		store.tasks.splice(row, 1)
+	})
+
+	selectionStore.clearSelection()
+}
+
+const onClose = () => {
+	selectionStore.selectedTasks = []
 }
 </script>
 
@@ -202,31 +251,117 @@ const finishEdit = (row: number, field: keyof Task) => {
 											</div>
 										</template>
 									</td>
-									<td class="p-5">
-										<span class="text-sm text-gray-700">
-											{{ Array.isArray(task.developer) ? task.developer.join(', ') : task.developer }}
-										</span>
+									<td
+										class="p-5 text-sm text-gray-700 cursor-pointer group"
+										@click="enableEdit(index, 'developer')"
+									>
+										<template v-if="editingCell?.row === index && editingCell?.field === 'developer'">
+											<Multiselect
+												v-model="localEditValue"
+												:options="allDevelopers"
+												:taggable="true"
+												placeholder="Select developers"
+												@close="() => finishEdit(index, 'developer')"
+											/>
+										</template>
+										<template v-else>
+											<div class="flex items-center justify-between">
+												{{ Array.isArray(task.developer) ? task.developer.join(', ') : task.developer || '-' }}
+												<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+											</div>
+										</template>
+									</td>
+									<td
+										class="p-5 text-sm text-gray-700 cursor-pointer group"
+										@click="enableEdit(index, 'status')"
+									>
+										<template v-if="editingCell?.row === index && editingCell?.field === 'status'">
+											<select
+												v-model="localEditValue"
+												@blur="finishEdit(index, 'status')"
+												@change="finishEdit(index, 'status')"
+												class="border p-1 rounded w-full"
+											>
+												<option
+													v-for="status in allStatuses"
+													:key="status"
+													:value="status"
+												>
+													{{ status }}
+												</option>
+											</select>
+										</template>
+										<template v-else>
+											<div class="flex items-center justify-between">
+												<Badge
+													:text="task.status"
+													:variant="statusVariant(task.status)"
+												/>
+												<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+											</div>
+										</template>
 									</td>
 
-									<td class="p-5">
-										<Badge
-											:text="task.status"
-											:variant="statusVariant(task.status)"
-										/>
+									<td
+										class="p-5 text-sm text-gray-700 cursor-pointer group"
+										@click="enableEdit(index, 'priority')"
+									>
+										<template v-if="editingCell?.row === index && editingCell?.field === 'priority'">
+											<select
+												v-model="localEditValue"
+												@blur="finishEdit(index, 'priority')"
+												@change="finishEdit(index, 'priority')"
+												class="border p-1 rounded w-full"
+											>
+												<option
+													v-for="priority in ['Low', 'Medium', 'High', 'Critical', 'Best Effort']"
+													:key="priority"
+													:value="priority"
+												>
+													{{ priority }}
+												</option>
+											</select>
+										</template>
+										<template v-else>
+											<div class="flex items-center justify-between">
+												<Badge
+													:text="task.priority"
+													:variant="priorityVariant(task.priority)"
+												/>
+												<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+											</div>
+										</template>
 									</td>
 
-									<td class="p-5">
-										<Badge
-											:text="task.priority"
-											:variant="priorityVariant(task.priority)"
-										/>
-									</td>
-
-									<td class="p-5">
-										<Badge
-											:text="task.type"
-											:variant="typeVariant(task.type)"
-										/>
+									<td
+										class="p-5 text-sm text-gray-700 cursor-pointer group"
+										@click="enableEdit(index, 'type')"
+									>
+										<template v-if="editingCell?.row === index && editingCell?.field === 'type'">
+											<select
+												v-model="localEditValue"
+												@blur="finishEdit(index, 'type')"
+												@change="finishEdit(index, 'type')"
+												class="border p-1 rounded w-full"
+											>
+												<option
+													v-for="type in ['Feature Enhancements', 'Bug', 'Other']"
+													:key="type"
+													:value="type"
+												>
+													{{ type }}
+												</option>
+											</select>
+										</template>
+										<template v-else>
+											<div class="flex items-center justify-between">
+												<Badge
+													:text="task.type"
+													:variant="typeVariant(task.type)"
+												/>
+												<Pencil class="w-4 h-4 ml-1 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+											</div>
+										</template>
 									</td>
 
 									<td
@@ -325,4 +460,12 @@ const finishEdit = (row: number, field: keyof Task) => {
 			</div>
 		</div>
 	</div>
+	<Toolbar
+		v-if="selectionStore.selectedTasks.length > 0"
+		:selected-count="selectionStore.selectedTasks.length"
+		@export="onExport"
+		@archive="onArchive"
+		@delete="onDelete"
+		@close="onClose"
+	/>
 </template>
