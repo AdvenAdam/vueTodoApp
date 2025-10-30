@@ -117,7 +117,7 @@ const onTaskSelected = (value: string) => {
 </script>
 
 <template>
-	<div class="flex flex-col space-y-4 max-w-7xl mx-auto overflow-x-scroll">
+	<div class="flex flex-col space-y-4">
 		<div
 			v-if="taskStore.loading"
 			class="text-center py-8 text-gray-500"
@@ -126,7 +126,7 @@ const onTaskSelected = (value: string) => {
 		</div>
 
 		<div v-else>
-			<div class="flex items-center p-5 mb-4 gap-4">
+			<div class="flex items-center mb-4 gap-4">
 				<SearchToggle @search="onSearch" />
 				<SearchDevToggle
 					:options="allDevelopers"
